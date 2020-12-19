@@ -24,7 +24,7 @@
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
 
-    var socket = io("https://mlpasscode.herokuapp.com/");
+    var socket = io("ws://mlpasscode.herokuapp.com/socket.io/?EIO=4&transport=websocket");
 
     socket.on('connect', function(){
         console.log("Connected...!", socket.connected)
