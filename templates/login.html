@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Login</title>
+</head>
+<body>
+
+    <form action="/check_entry" method="post">
+        <p>Name:</p>
+        <p><input type="text" name='username'/></p>
+        <p>ID:</p>
+        <p><input type="text" name='ID' /></p>
+        <p><input type="submit" onclick="window.location.href='/index_page'" value="Login" /></p>
+        <p>{{info}}</p>
+    </form>
+<p><input type="submit" onclick="window.location.href='/signup'" value="Register" /></p>
+</body>
+</html>

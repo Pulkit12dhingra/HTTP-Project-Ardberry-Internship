@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<title>Display Webcam Stream</title>
+<link rel="shortcut icon" href="#">
+</head>
+<h2>Streaming</h2>
+<h4>{{info}}</h4>
+<body>
+<h1>Streaming </h1>
+        <p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
+<div class = 'video'>
+    <img id="image">
+</div>
+<div id="container">
+    <video id="videoElement" width="0" height="0" autoplay=True style="display: inline;"></video>
+    <p id="greeting"></p>
+</div>
+
+
+<script type="text/javascript" charset="utf-8">
+    //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
+
+    var socket = io('http://localhost:5000');
+
+    socket.on('connect', function(){
+        console.log("Connected...!", socket.connected)
+    });
+    var video = $("#videoElement").get()[0];
+
+    if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(function (err0r) {
+            console.log(err0r)
+            console.log("Something went wrong!");
+        });
+    }
+
+
+    const FPS = 30;
+    setInterval(() => {
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        var data = canvas.toDataURL('image/jpeg');
+        var type = "image/jpeg"
+        data = data.replace('data:' + type + ';base64,', '');
+        socket.emit('image', data);
+    }, 10000/FPS);
+   socket.on('response_back', function(image){
+        const image_id = document.getElementById('image');
+        image_id.src = image;
+    });
+
+</script>
+</body>
+</html>
