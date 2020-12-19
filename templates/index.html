@@ -19,12 +19,20 @@
     <video id="videoElement" width="0" height="0" autoplay=True style="display: inline;"></video>
     <p id="greeting"></p>
 </div>
-
+<p id="href"></p>
 
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
+    var protocol = location.protocol;
+    var slashes = protocol.concat("//");
+    var host = slashes.concat(window.location.host);
 
-    var socket = io("ws://mlpasscode.herokuapp.com/socket.io/?EIO=4&transport=websocket");
+    // or as you probably should do
+    var host = location.protocol.concat("//").concat(window.location.host);
+
+    // the above is the same as origin, e.g. "https://stackoverflow.com"
+    var host = window.location.origin;
+    var socket = io(host);
 
     socket.on('connect', function(){
         console.log("Connected...!", socket.connected)
@@ -44,7 +52,7 @@
     }
 
 
-    const FPS = 30;
+    const FPS = 50;
     setInterval(() => {
 
         const canvas = document.createElement('canvas');
