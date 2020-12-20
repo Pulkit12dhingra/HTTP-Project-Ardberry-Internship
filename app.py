@@ -383,4 +383,4 @@ def image(data_image):
 
 if __name__ == '__main__':
     #app.run(debug=True)
-    socketio.run(app, host='0.0.0.0', debug=False)
+    socketio.run(app, debug=False)
