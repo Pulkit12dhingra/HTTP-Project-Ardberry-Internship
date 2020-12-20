@@ -22,3 +22,4 @@ wincertstore==0.2
 gunicorn
 requests
 Pillow
+Flask-SocketIO
