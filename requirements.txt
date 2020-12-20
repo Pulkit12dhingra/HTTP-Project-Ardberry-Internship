@@ -12,7 +12,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 numpy==1.19.3
 olefile==0.46
-opencv-python-headless==4.2.0.32
+opencv-python-headless
 python-engineio==3.14.2
 python-socketio==4.6.1
 pyzmq==20.0.0
