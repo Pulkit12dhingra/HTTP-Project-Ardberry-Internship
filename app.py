@@ -317,7 +317,8 @@ def image(data_image):
     else:
         character = 'No Character Detected'
     chara["character"] = character
-    emit('response_back', character)
+    value ='Normal :%1.2f'%(0.12)
+    emit('response_back', value)
 
 
 if __name__ == '__main__':
