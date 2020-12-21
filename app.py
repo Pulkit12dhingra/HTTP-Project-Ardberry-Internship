@@ -295,90 +295,29 @@ def get_text(imgTestingNumbers):
 @socketio.on('image')
 def image(data_image):
     handDetect=cv2.CascadeClassifier('fist.xml')
-    faceDetect = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    org = (50, 50)
-    fontScale = 1
-    color = (255, 0, 0)
-    thickness = 2
-    #t=100
     sbuf = StringIO()
     sbuf.write(data_image)
     b = io.BytesIO(base64.b64decode(data_image))
-    if chara["tags"]==0:
-        #faceDetect = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        # decode and convert into image
-
-        if chara["t"]!=0:
-            try:
-                pimg = Image.open(b)
-            ## converting RGB to BGR, as opencv standards
-                frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
-                #frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_BGR2GRAY)
-                # Process the image frame
-                gray = cv2.cvtColor(np.array(frame), cv2.COLOR_BGR2GRAY)
-                hand = handDetect.detectMultiScale(gray, 1.3, 5)
-                for (x, y, w, h) in hand:
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                    center_point = center(x, y, w, h)
-                    chara["l"].append(center_point)
-                    tracking(frame, chara["l"])
-
-                frame = imutils.resize(frame, width=700)
-                frame = cv2.flip(frame, 1)
-                mins, secs = divmod(chara["t"], 60)
-                timer = '{:02d}:{:02d}'.format(mins, secs)
-                cv2.putText(frame, timer, org, font,
-                            fontScale, color, thickness, cv2.LINE_AA)
-                imgencode = cv2.imencode('.jpg', frame)[1]
-
-                # base64 encode
-                stringData = base64.b64encode(imgencode).decode('utf-8')
-                b64_src = 'data:image/jpg;base64,'
-                stringData = b64_src + stringData
-
-                # emit the frame back
-                emit('response_back', stringData)
-                chara["t"]-=1
-                if chara["t"]==1:
-                    chara["flag"]=1
-                else:
-                    pass
-            except:
-                pass
-
-
-        if chara["flag"]==1:
+    try:
+        pimg = Image.open(b)
+        frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(np.array(frame), cv2.COLOR_BGR2GRAY)
+        hand = handDetect.detectMultiScale(gray, 1.3, 5)
+        for (x, y, w, h) in hand:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            center_point = center(x, y, w, h)
+            chara["l"].append(center_point)
+        if len(chara["l"]) != 0:
             scr = cv2.imread('blank.jpg')
-
-            if len(chara["l"]) != 0:
-                sample_sign_1 = show_display(scr, chara["l"])
-                sample = get_text(sample_sign_1)
-                sample_sign = cv2.putText(sample[0], sample[1], org, font,
-                                          fontScale, color, thickness, cv2.LINE_AA)
-            else:
-                sample_sign = cv2.putText(scr, 'No fist detected', org, font,
-                                          fontScale, color, thickness, cv2.LINE_AA)
-
-
-            try:
-                character=sample[1]
-            except:
-                character='No Character Detected'
-            chara["character"]=character
-
-            imgencode = cv2.imencode('.jpg', sample_sign)[1]
-            stringData = base64.b64encode(imgencode).decode('utf-8')
-            b64_src = 'data:image/jpg;base64,'
-            stringData = b64_src + stringData
-
-            # emit the frame back
-            emit('response_back', stringData)
-            chara["tags"]=1
+            sample_sign_1 = show_display(scr, chara["l"])
+            sample = get_text(sample_sign_1)
+            character = sample[1]
         else:
-            pass
-    else:
-        pass
+            character = 'No Character Detected'
+        chara["character"] = character
+        emit('response_back', character)
+    except:
+        emit('response_back', "Processing.....")
 
 
 if __name__ == '__main__':
