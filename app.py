@@ -317,8 +317,6 @@ def image(data_image):
     chara["character"] = character
     emit('response_back', character)
 
-    emit('response_back', "Processing.....")
-
 
 if __name__ == '__main__':
     #app.run(debug=True)
