@@ -300,9 +300,11 @@ def image(data_image):
     b = io.BytesIO(base64.b64decode(data_image))
 
     pimg = Image.open(b)
+    emit('response_back', "Image found")
     frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
     gray = cv2.cvtColor(np.array(frame), cv2.COLOR_BGR2GRAY)
     hand = handDetect.detectMultiScale(gray, 1.3, 5)
+    emit('response_back', "hand detected")
     for (x, y, w, h) in hand:
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
         center_point = center(x, y, w, h)
