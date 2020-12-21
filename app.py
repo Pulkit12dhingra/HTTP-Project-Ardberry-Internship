@@ -295,6 +295,7 @@ def get_text(imgTestingNumbers):
 @socketio.on('image')
 def image(data_image):
     handDetect=cv2.CascadeClassifier('fist.xml')
+    emit('response_back', "Socket entered")
     sbuf = StringIO()
     sbuf.write(data_image)
     b = io.BytesIO(base64.b64decode(data_image))
