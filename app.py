@@ -300,16 +300,14 @@ def image(data_image):
     b = io.BytesIO(base64.b64decode(data_image))
     try:
         pimg = Image.open(b)
-        frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
-        gray = cv2.cvtColor(np.array(frame), cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(np.array(pimg), cv2.COLOR_BGR2GRAY)
         hand = handDetect.detectMultiScale(gray, 1.3, 5)
         for (x, y, w, h) in hand:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
             center_point = center(x, y, w, h)
             chara["l"].append(center_point)
         if len(chara["l"]) != 0:
-            scr = cv2.imread('blank.jpg')
-            sample_sign_1 = show_display(scr, chara["l"])
+            scr = Image.open('blank.jpg')
+            sample_sign_1 = show_display(np.array(scr), chara["l"])
             sample = get_text(sample_sign_1)
             character = sample[1]
         else:
@@ -319,9 +317,8 @@ def image(data_image):
     except:
         character="Processing......"
         emit('response_back', character)
-
-
-
+        
+        
 if __name__ == '__main__':
     #app.run(debug=True)
     socketio.run(app, host='0.0.0.0', debug=True)
