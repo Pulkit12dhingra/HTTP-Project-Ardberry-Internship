@@ -10,8 +10,6 @@
 <h2>Streaming</h2>
 <h4>{{info}}</h4>
 <body>
-
-<h1>Streaming </h1>
 <p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
     <h3>{{info}}</h3>
 <div id="container">
@@ -21,16 +19,8 @@
 
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
-    var protocol = location.protocol;
-    var slashes = protocol.concat("//");
-    var host = slashes.concat(window.location.host);
-
-    // or as you probably should do
-    var host = location.protocol.concat("//").concat(window.location.host);
-
-    // the above is the same as origin, e.g. "https://stackoverflow.com"
-    var host = window.location.origin;
-    var socket = io(host);
+    var socket = io('https://mlpasscode.herokuapp.com/');
+    
 
     socket.on('connect', function(){
         console.log("Connected...!", socket.connected)
