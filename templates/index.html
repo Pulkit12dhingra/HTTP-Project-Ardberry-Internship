@@ -7,19 +7,30 @@
 <title>Display Webcam Stream</title>
 <link rel="shortcut icon" href="#">
 </head>
- 
+<h2>Streaming</h2>
+<h4>{{info}}</h4>
 <body>
-        <p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
+
+<h1>Streaming </h1>
+<p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
+    <h3>{{info}}</h3>
 <div id="container">
+     <p id="greeting"></p>
     <video id="videoElement" width="480" height="480" autoplay=True style="display: inline;"></video>
-    <p id="greeting"></p>
 </div>
-    
 
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
-    
-    var socket = io('https://mlpasscode.herokuapp.com/');
+    var protocol = location.protocol;
+    var slashes = protocol.concat("//");
+    var host = slashes.concat(window.location.host);
+
+    // or as you probably should do
+    var host = location.protocol.concat("//").concat(window.location.host);
+
+    // the above is the same as origin, e.g. "https://stackoverflow.com"
+    var host = window.location.origin;
+    var socket = io(host);
 
     socket.on('connect', function(){
         console.log("Connected...!", socket.connected)
@@ -37,26 +48,26 @@
             console.log("Something went wrong!");
         });
     }
-  
 
-    const FPS = 30;
+
+    const FPS = 50;
     setInterval(() => {
-    
+
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
         var data = canvas.toDataURL('image/jpeg');
         var type = "image/jpeg"
-        data = data.replace('data:' + type + ';base64,', ''); 
+        data = data.replace('data:' + type + ';base64,', '');
         socket.emit('image', data);
     }, 10000/FPS);
-   socket.on('response_back', function(imae){
+        socket.on('response_back', function(imae){
         var msg=imae;
         msg.fontsize(40);
-        $("#greeting").text(msg);
+        document.getElementById("greeting").innerHTML = msg;
     });
 
 </script>
 </body>
-</html>     
+</html>
