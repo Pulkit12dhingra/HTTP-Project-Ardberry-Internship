@@ -9,8 +9,9 @@
 </head>
 <h2>Streaming</h2>
 <body>
+    <form>
 <p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
-    <h3>{{info}}</h3>
+    <form/>
 <div id="container">
      
     <video id="videoElement" width="480" height="480" autoplay=True style="display: inline;"></video>
@@ -19,7 +20,7 @@
 
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
-    var socket = io('https://mlpasscode.herokuapp.com/');
+    var socket = io('https://mlpasscode.herokuapp.com');
     
 
     socket.on('connect', function(){
