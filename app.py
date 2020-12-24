@@ -324,7 +324,7 @@ def image(data_image):
         else:
             character = 'No Character Detected'
         chara["character"] = character
-        emit('response_back', character+ "Emited")
+        emit('response_back', character)
     except:
         character="Processing......"
         emit('response_back', character)
