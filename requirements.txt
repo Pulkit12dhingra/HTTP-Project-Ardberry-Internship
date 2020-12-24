@@ -5,7 +5,6 @@ cffi
 chardet
 click
 cryptography
-dnspython
 eventlet
 Flask
 Flask-Cors
@@ -35,3 +34,6 @@ Werkzeug
 win-inet-pton 
 wincertstore
 gunicorn
+gevent
+gevent-websocket
+flask_session

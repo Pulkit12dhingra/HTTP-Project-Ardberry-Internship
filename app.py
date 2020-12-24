@@ -9,7 +9,7 @@ from PIL import Image
 import sqlite3
 import time
 from flask import Flask, render_template, Response,request,redirect,url_for, session,flash
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 import io
 import base64
 from io import StringIO
@@ -17,18 +17,16 @@ import imutils
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-socketio = SocketIO(app)
-
-
-cors = CORS(app)
+socketio = SocketIO(app,cors_allowed_origins="*")
+cors=CORS(app)
 
 app.secret_key='Oblivion'
-
-chara={"character":None,"tag":0,"tags":0, "flag":0, "l":[], "t":10, "prev":Image.open("blank.jpg")}
+chara={"character":"","tag":0,"tags":0, "flag":0, "l":[]}
 
 @app.route('/')
 def login():
     chara["tag"] = 0
+
     return render_template('login.html')
 
 @app.route('/index_page')
@@ -40,6 +38,11 @@ def logout():
     try:
         session.pop("Name",None)
         session.pop("Id", None)
+        chara["character"] = None
+        chara["tag"] = 0
+        chara["tags"] = 0
+        chara["flag"] = 0
+        chara["l"] = []
     except:
         chara.clear()
         chara["character"]= None
@@ -47,7 +50,6 @@ def logout():
         chara["tags"]=0
         chara["flag"]= 0
         chara["l"]=[]
-        chara["t"]= 10
     #flash("Logout successfullt","info")
     return redirect(url_for("login"))
 
@@ -59,20 +61,20 @@ def sign_up():
 @app.route('/signup_page', methods=["POST","GET"])
 def signup():
     #Name, Id, Category, Email, Gender, Contat = map(str, list_of_data)
-    if request.method == "POST":
-        Name = request.form['Username']
-        Id = request.form['ID']
-        Category = request.form['Category']
-        Email = request.form['Email']
-        Gender = request.form['Gender']
-        Contact = request.form['Contact']
+    if request.method == "GET":
+        Name = request.args['Username']
+        Id = request.args['ID']
+        Category = request.args['Category']
+        Email = request.args['Email']
+        Gender = request.args['Gender']
+        Contact = request.args['Contact']
         chara["Name"] = str(Name)
         chara["Id"] = int(Id)
         chara["Category"] = str(Category)
         chara["Email"] = str(Email)
         chara["Gender"] = str(Gender)
         chara["Contact"] = str(Contact)
-        return render_template('index.html')
+    return render_template('index.html')
 
 @app.route('/fill_data')
 def fill_data():
@@ -104,33 +106,39 @@ def fill_data():
 
 @app.route("/check_entry",methods=['GET','POST'])
 def check_login():
-    if request.method == "POST" :
-        Name = request.form['username']
-        Id = request.form['ID']
+    if request.method == "GET" :
+        Name = request.args['username']
+        Id = request.args['ID']
         session["Name"]=Name
         chara["Name"]=Name
         session["Id"] = Id
         chara["Id"]=Id
+
         con = sqlite3.connect("passcode.db")
         cmd = "SELECT * FROM People WHERE ID=" + str(Id)
         cursor = con.execute(cmd)
         isRecordExist_id = 0
         isRecordExist_name = 0
+
         for row in cursor:
             isRecordExist_id = 1
             if str(row[1]) == Name:
                 isRecordExist_name = 1
+
         if isRecordExist_id == 1 and isRecordExist_name == 1:
             return render_template('index.html')
         else:
             return render_template('login.html', info="No Existing Data Found")
+    else:
+        return render_template('login.html', info="type again pls")
 
 @app.route('/compare_sign')
 def compare_sign():
     if chara["tag"]==1:
         return redirect(url_for('fill_data'))
     else:
-        if "Id" in session and chara["character"]!=None:
+        if chara["Id"] and chara["character"]!=None:
+            print(chara["character"])
             Id=session['Id']
             character=chara["character"]
         else:
@@ -138,11 +146,13 @@ def compare_sign():
         con = sqlite3.connect("passcode.db")
         cmd = "SELECT * FROM People WHERE ID=" + str(Id)
         cursor = con.execute(cmd)
+
         isRecordExist_id = 0
         isRecordExist_character = 0
         for row in cursor:
             isRecordExist_id = 1
             if str(row[6]) == character:
+
                 isRecordExist_character = 1
         if isRecordExist_id == 1 and isRecordExist_character == 1:
             return render_template('display.html', info="Found ")
@@ -192,6 +202,7 @@ class ContourWithData():
         self.intRectY = intY
         self.intRectWidth = intWidth
         self.intRectHeight = intHeight
+        return
 
     def checkIfContourIsValid(self):                            # this is oversimplified, for a production grade program
         if self.fltArea < MIN_CONTOUR_AREA: return False        # much better validity checking would be necessary
@@ -200,7 +211,7 @@ class ContourWithData():
 def get_text(imgTestingNumbers):
     allContoursWithData = []                # declare empty lists,
     validContoursWithData = []              # we will fill these shortly
-
+    s="pause"
     try:
         npaClassifications = np.loadtxt("classifications.txt", np.float32)                  # read in training classifications
     except:
@@ -228,7 +239,7 @@ def get_text(imgTestingNumbers):
     if imgTestingNumbers is None:                           # if image was not read successfully
         print("error: image not read from file \n\n")  # print error message to std out
         os.system("pause")                                  # pause so user can see error message
-        return                                              # and exit function (which exits program)
+        return                                             # and exit function (which exits program)
     # end if
 
     imgGray = cv2.cvtColor(imgTestingNumbers, cv2.COLOR_BGR2GRAY)       # get grayscale image
@@ -306,8 +317,8 @@ def image(data_image):
             center_point = center(x, y, w, h)
             chara["l"].append(center_point)
         if len(chara["l"]) != 0:
-            scr = Image.open('blank.jpg')
-            sample_sign_1 = show_display(np.array(scr), chara["l"])
+            scr = cv2.imread('blank.jpg')
+            sample_sign_1 = show_display(scr, chara["l"])
             sample = get_text(sample_sign_1)
             character = sample[1]
         else:
@@ -317,8 +328,8 @@ def image(data_image):
     except:
         character="Processing......"
         emit('response_back', character)
-        
+
         
 if __name__ == '__main__':
     #app.run(debug=True)
-    socketio.run(app, host='0.0.0.0', debug=True)
+    socketio.run(app,host='0.0.0.0', debug=True )
