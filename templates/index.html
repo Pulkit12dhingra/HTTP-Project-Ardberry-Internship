@@ -7,22 +7,17 @@
 <title>Display Webcam Stream</title>
 <link rel="shortcut icon" href="#">
 </head>
-<h2>Streaming</h2>
+
 <body>
-    <form>
-<p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
-    <form/>
 <div id="container">
-     
     <video id="videoElement" width="480" height="480" autoplay=True style="display: inline;"></video>
     <p id="greeting"></p>
 </div>
 
 <script type="text/javascript" charset="utf-8">
     //https://fierce-anchorage-82286.herokuapp.com/http://localhost:5000
-    var socket = io('https://mlpasscode.herokuapp.com/');
-    
-
+    //var socket = io('https://mlpasscode.herokuapp.com/');
+    var socket = io('http://localhost:5000/');
     socket.on('connect', function(){
         console.log("Connected...!", socket.connected)
     });
@@ -33,6 +28,7 @@
         .then(function (stream) {
             video.srcObject = stream;
             video.play();
+        console.log("video frame is looking good" )
         })
         .catch(function (err0r) {
             console.log(err0r)
@@ -51,14 +47,18 @@
         var data = canvas.toDataURL('image/jpeg');
         var type = "image/jpeg"
         data = data.replace('data:' + type + ';base64,', '');
-        socket.emit('image', data);
+        socket.send('image', data);
     }, 10000/FPS);
-        socket.on('response_back', function(imae){
+
+   socket.on('response_back', function(imae){
         var msg=imae;
         msg.fontsize(40);
         $("#greeting").text(msg);
     });
 
+
 </script>
+
+<p><input type="submit" onclick="window.location.href='/compare_sign'" value="Save" /></p>
 </body>
 </html>

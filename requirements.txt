@@ -8,7 +8,7 @@ cryptography
 eventlet
 Flask
 Flask-Cors
-Flask-SocketIO
+Flask-SocketIO==4.3.2
 greenlet
 idna 
 imagezmq
@@ -23,8 +23,8 @@ Pillow
 pycparser
 pyOpenSSL
 PySocks
-python-engineio
-python-socketio
+python-engineio==3.13.2
+python-socketio==4.6.0
 pyzmq
 requests
 six 

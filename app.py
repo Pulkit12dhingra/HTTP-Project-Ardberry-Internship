@@ -8,17 +8,19 @@ import os
 from PIL import Image
 import sqlite3
 import time
-from flask import Flask, render_template, Response,request,redirect,url_for, session,flash
-from flask_cors import CORS
+from flask import Flask, render_template, Response,request,redirect,url_for,flash
+from flask_cors import CORS,cross_origin
 import io
 import base64
 from io import StringIO
 import imutils
 from flask_socketio import SocketIO, emit
+import random
 
 app = Flask(__name__)
-socketio = SocketIO(app,cors_allowed_origins="*")
-cors=CORS(app)
+cors = CORS(app)
+socketio = SocketIO(app)
+
 
 app.secret_key='Oblivion'
 chara={"character":"","tag":0,"tags":0, "flag":0, "l":[]}
@@ -36,8 +38,6 @@ def index():
 @app.route("/logout")
 def logout():
     try:
-        session.pop("Name",None)
-        session.pop("Id", None)
         chara["character"] = None
         chara["tag"] = 0
         chara["tags"] = 0
@@ -58,7 +58,7 @@ def sign_up():
     chara["tag"] = 1
     return render_template('signup.html')
 
-@app.route('/signup_page', methods=["POST","GET"])
+@app.route('/signup_page', methods=["GET"])
 def signup():
     #Name, Id, Category, Email, Gender, Contat = map(str, list_of_data)
     if request.method == "GET":
@@ -104,14 +104,12 @@ def fill_data():
         con.close()
     return redirect(url_for('logout'))
 
-@app.route("/check_entry",methods=['GET','POST'])
+@app.route("/check_entry",methods=['GET'])
 def check_login():
     if request.method == "GET" :
         Name = request.args['username']
         Id = request.args['ID']
-        session["Name"]=Name
         chara["Name"]=Name
-        session["Id"] = Id
         chara["Id"]=Id
 
         con = sqlite3.connect("passcode.db")
@@ -138,11 +136,10 @@ def compare_sign():
         return redirect(url_for('fill_data'))
     else:
         if chara["Id"] and chara["character"]!=None:
-            print(chara["character"])
-            Id=session['Id']
+            Id=chara["Id"]
             character=chara["character"]
         else:
-            return render_template('display.html', info="not found character"+str(chara["tag"]))
+            render_template("display.html", info="Password incorrect")
         con = sqlite3.connect("passcode.db")
         cmd = "SELECT * FROM People WHERE ID=" + str(Id)
         cursor = con.execute(cmd)
@@ -278,32 +275,27 @@ def get_text(imgTestingNumbers):
 
     strFinalString = ""         # declare final string, this will have the final number sequence by the end of the program
 
-    for contourWithData in validContoursWithData:            # for each contour
-                                                # draw a green rect around the current char
-        cv2.rectangle(imgTestingNumbers,                                        # draw rectangle on original testing image
-                      (contourWithData.intRectX, contourWithData.intRectY),     # upper left corner
-                      (contourWithData.intRectX + contourWithData.intRectWidth, contourWithData.intRectY + contourWithData.intRectHeight),      # lower right corner
-                      (0, 255, 0),              # green
-                      2)                        # thickness
+            # for each contour               # thickness
 
-        imgROI = imgThresh[contourWithData.intRectY : contourWithData.intRectY + contourWithData.intRectHeight,     # crop char out of threshold image
-                           contourWithData.intRectX : contourWithData.intRectX + contourWithData.intRectWidth]
+    imgROI = imgThresh[contourWithData.intRectY : contourWithData.intRectY + contourWithData.intRectHeight,     # crop char out of threshold image
+                       contourWithData.intRectX : contourWithData.intRectX + contourWithData.intRectWidth]
 
-        imgROIResized = cv2.resize(imgROI, (RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT))             # resize image, this will be more consistent for recognition and storage
+    imgROIResized = cv2.resize(imgROI, (RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT))             # resize image, this will be more consistent for recognition and storage
 
-        npaROIResized = imgROIResized.reshape((1, RESIZED_IMAGE_WIDTH * RESIZED_IMAGE_HEIGHT))      # flatten image into 1d numpy array
+    npaROIResized = imgROIResized.reshape((1, RESIZED_IMAGE_WIDTH * RESIZED_IMAGE_HEIGHT))      # flatten image into 1d numpy array
 
-        npaROIResized = np.float32(npaROIResized)       # convert from 1d numpy array of ints to 1d numpy array of floats
+    npaROIResized = np.float32(npaROIResized)       # convert from 1d numpy array of ints to 1d numpy array of floats
 
-        retval, npaResults, neigh_resp, dists = kNearest.findNearest(npaROIResized, k = 1)     # call KNN function find_nearest
+    retval, npaResults, neigh_resp, dists = kNearest.findNearest(npaROIResized, k = 1)     # call KNN function find_nearest
 
-        strCurrentChar = str(chr(int(npaResults[0][0])))                                             # get character from results
+    strCurrentChar = str(chr(int(npaResults[0][0])))                                             # get character from results
 
-        strFinalString = strFinalString + strCurrentChar            # append current char to full string
+    strFinalString = strFinalString + strCurrentChar            # append current char to full string
 
     return (imgTestingNumbers,strFinalString)
 
 @socketio.on('image')
+@cross_origin()
 def image(data_image):
     handDetect=cv2.CascadeClassifier('fist.xml')
     sbuf = StringIO()
@@ -317,8 +309,8 @@ def image(data_image):
             center_point = center(x, y, w, h)
             chara["l"].append(center_point)
         if len(chara["l"]) != 0:
-            scr = cv2.imread('blank.jpg')
-            sample_sign_1 = show_display(scr, chara["l"])
+            scr = Image.open('blank.jpg')
+            sample_sign_1 = show_display(np.array(scr), chara["l"])
             sample = get_text(sample_sign_1)
             character = sample[1]
         else:
