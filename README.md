@@ -1,4 +1,4 @@
-# HTTP System
+# HTPP System
 We have seen face recognition and another security tech. available in the market. The Hand Tracking Password Protecting System or HTPP System is a way of making things cooler. Its a trick of special character to enter the HTPP System is just a safe and fun protocol of doing the usual work.
 
 ## How it Works
